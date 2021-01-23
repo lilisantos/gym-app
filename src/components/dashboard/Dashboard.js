@@ -35,7 +35,7 @@ const useStyles = makeStyles((theme) => ({
     maxWidth: 500,
     height: 150,
     display: "flex",
-    justifyContent: "center" 
+    justifyContent: "center"
    
   },
   title: {

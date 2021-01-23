@@ -63,17 +63,25 @@ export default function Booking() {
   const classes = useStyles();
 
     let [selectedDay, setSelectedDay] = useState('');  
+    let [queryDay, setQueryDay] = useState('');  
     let [bookingList, setBookingList] = useState([]);
     let [slotList, setSlotList] = useState([]);
 
     var dateFormat = require("dateformat");
     var date = new Date('');
-  
+    
     React.useEffect(() => {
-      fetch(`http://localhost:8000/slots/get/${selectedDay}`)
+      fetch(`http://localhost:8000/slots/get/${queryDay}`)
         .then((response) => response.json())
         .then((json) => setSlotList(json));
-    }, [selectedDay]);     
+    }, [queryDay]);          
+          
+    const handleDayClick = (day) => {
+      setSelectedDay(day);
+      setQueryDay(dateFormat(selectedDay, "yyyy-mm-dd")); 
+  };
+
+  console.log("day: " + queryDay);
 
   return (
     <ThemeProvider theme={theme}>
@@ -97,7 +105,7 @@ export default function Booking() {
                         <DayPicker        
                           id="date"
                           label="Date"
-                          onDayClick={setSelectedDay}       
+                          onDayClick={handleDayClick}        
                           className={classes.root}        
                         />                    
                       </CardContent>               
@@ -138,7 +146,7 @@ export default function Booking() {
                                     date = dateFormat(slot.date, "hh:MM")
                                 } />
                               </ListItem>
-                              <Divider />   
+                              <Divider color="primary"/>   
                           </List>  
                         </React.Fragment>                   
                             

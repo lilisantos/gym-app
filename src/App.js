@@ -10,7 +10,9 @@ import {
 } from "react-router-dom";
 import Dashboard from '../src/components/dashboard/Dashboard'
 import Booking from '../src/components/booking/Booking'
+import AddMeal from '../src/components/meal/AddMeal'
 import Login from './components/login/Login'
+import useToken from './components/login/useToken'
 
 const theme = createMuiTheme({
   palette: {
@@ -24,13 +26,14 @@ const theme = createMuiTheme({
 });
 
 
-export default function App() {  
-  const [token, setToken] = useState();
+
+export default function App() {      
+  const { token, setToken } = useToken();
 
   if(!token) {
     return <Login setToken={setToken} />
   }
-  
+ 
   return (
     <div className="wrapper">
     <ThemeProvider theme={theme}>
@@ -46,6 +49,9 @@ export default function App() {
             </Route>
             <Route path="/booking">
               <Booking />
+            </Route>
+            <Route path="/diary">
+              <AddMeal />
             </Route>
             {/* <Route path="/logout">
               <Logout />

@@ -73,13 +73,13 @@ async function loginUser(credentials) {
 export default function Login({ setToken }) {
   const classes = useStyles();
 
-  const [username, setUserName] = useState();
+  const [email, setEmail] = useState();
   const [password, setPassword] = useState();
 
   const handleSubmit = async e => {
     e.preventDefault();
     const token = await loginUser({
-      username,
+      email,
       password
     });
     setToken(token);
@@ -112,7 +112,7 @@ export default function Login({ setToken }) {
                     name="email"
                     autoComplete="email"
                     autoFocus
-                    onChange={e => setUserName(e.target.value)}
+                    onChange={e => setEmail(e.target.value)}
                 />
                 <TextField
                     variant="outlined"

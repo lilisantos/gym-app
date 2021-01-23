@@ -17,6 +17,7 @@ import HideOnScroll from "./HideOnScroll"
 import BackToTop from "./BackToTop";
 import Dashboard from '../dashboard/Dashboard'
 import Booking from '../booking/Booking'
+import AddMeal from '../meal/AddMeal'
 import App from '../../App'
 import PropTypes from 'prop-types';
 import List from '@material-ui/core/List';
@@ -71,6 +72,7 @@ const navLinks = [
     // { title: `App`, path: `/` },
     { title: `Dashboard`, path: `/` },
     { title: `Booking`, path: `/booking` },
+    { title: `Food Diary`, path: `/diary` },
     { title: `Logout`, path: `/logout` },
   ];
 

@@ -29,6 +29,7 @@ const routing = (
       <Route path="/booking" component={Booking} />
     </div>
   </Router>
+
 );
 
 
