@@ -1,4 +1,4 @@
-import React, {Component, useState} from 'react';
+import React, {useState} from 'react';
 import { 
   createMuiTheme, 
   ThemeProvider, 
@@ -8,16 +8,9 @@ import {
 Box} from '@material-ui/core';  
 import { makeStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
-import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
-import Header from '../booking/Booking.js';
-import Moment from 'moment';
-import EventIcon from '@material-ui/icons/Event';
-import Icon from '@material-ui/core/Icon';
 import DataUsageIcon from '@material-ui/icons/DataUsage';
-import DescriptionIcon from '@material-ui/icons/Description';
 
 const theme = createMuiTheme({
   palette: {
@@ -35,7 +28,9 @@ const useStyles = makeStyles((theme) => ({
     maxWidth: 500,
     height: 150,
     display: "flex",
-    justifyContent: "center"
+    justifyContent: "center",
+    marginTop: 20,
+    backgroundColor: theme.palette.background.paper,
    
   },
   title: {
@@ -75,7 +70,13 @@ export default function Dashboard(){
       <Typography variant="h4" color="secondary">Dashboard</Typography>
       <Box justifyContent="center">
         {/* Grid container */}
-      <Grid container className={classes.root} spacing={0} >
+      <Grid container 
+            className={classes.root} 
+            spacing={0} 
+            direction="row"
+            justify="center"
+            alignItems="flex-start" 
+      >
 
         {/* Card 1 - Current Booking*/}
         <Grid item xs={6}>
@@ -126,9 +127,7 @@ export default function Dashboard(){
           </Grid>
         </Grid>
       </Grid>      
-      </Box>   
-
-      <Box justifyContent="center">   
+    
         <Card className={classes.root}>
           <CardContent>
             <Typography variant="h5" component="h3">
@@ -139,11 +138,11 @@ export default function Dashboard(){
               <Grid item xs={3}>
                 <Grid container justify="center" spacing={0} >          
                     <Grid>
-                    <Typography variant="subtitle1">
+                    <Typography variant="subtitle1" >
                       Calories
                     </Typography>   
-                    <Typography variant="body2">
-                      2100 cal
+                    <Typography variant="body2" component="b1">
+                      2100cal
                     </Typography>   
                     <DataUsageIcon color="secondary" className={classes.pos}/>
                     </Grid>           
@@ -153,10 +152,10 @@ export default function Dashboard(){
               <Grid item xs={3}>
                 <Grid container justify="center" spacing={0} >           
                     <Grid>
-                    <Typography variant="subtitle1">
+                    <Typography variant="subtitle1" >
                       Protein
                     </Typography>  
-                    <Typography variant="body2">
+                    <Typography variant="body2" >
                       135g
                     </Typography>   
                     <DataUsageIcon color="secondary" className={classes.pos} />
@@ -167,10 +166,10 @@ export default function Dashboard(){
               <Grid item xs={3}>
                 <Grid container justify="center" spacing={0} >           
                     <Grid>
-                    <Typography variant="subtitle1">
+                    <Typography variant="subtitle1" >
                       Carbs
                     </Typography> 
-                    <Typography variant="body2">
+                    <Typography variant="body2" >
                       246g
                     </Typography> 
                     <DataUsageIcon color="secondary" className={classes.pos} />
@@ -181,10 +180,10 @@ export default function Dashboard(){
               <Grid item xs={3}>
                 <Grid container justify="center" spacing={0} >           
                     <Grid>
-                    <Typography variant="subtitle1">
+                    <Typography variant="subtitle1" >
                       Fats
                     </Typography>  
-                    <Typography variant="body2">
+                    <Typography variant="body2" >
                       73g
                     </Typography> 
                     <DataUsageIcon color="secondary" className={classes.pos}/>
@@ -195,9 +194,7 @@ export default function Dashboard(){
             
           </CardContent>              
         </Card>
-      </Box>
-      
-      <Box justifyContent="center">   
+     
         <Card className={classes.root}>
           <CardContent>
           <IconButton >

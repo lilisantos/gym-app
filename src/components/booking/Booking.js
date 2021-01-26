@@ -6,25 +6,23 @@ import {
   Container, 
   Typography,
   Box } from '@material-ui/core';
-import Header from '../navbar/Header';
-import Calendar from 'react-calendar';
 import 'react-date-picker/dist/DatePicker.css';
-import { spacing } from '@material-ui/system';
-
 import DayPicker from 'react-day-picker';
 import 'react-day-picker/lib/style.css';
-
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
 import { makeStyles } from '@material-ui/core/styles';
-import TextField from '@material-ui/core/TextField';
-
 import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import Grid from '@material-ui/core/Grid';
+import FormHelperText from '@material-ui/core/FormHelperText';
+
+import useToken from '../login/useToken';
+import jwt_decode from "jwt-decode";
+// import SendBooking from './SendBooking';
+import ErrorBoundary from '../../errors/ErrorBoundary';
 
 const theme = createMuiTheme({
   palette: {
@@ -35,9 +33,7 @@ const theme = createMuiTheme({
       main: "#F7855B"
     }
   },
-  backgroundColor: "#F7855B"
 });
-
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -56,20 +52,55 @@ const useStyles = makeStyles((theme) => ({
     marginRight: theme.spacing(2),
     width: 200,
   },
+  form: {
+    width: '100%', // Fix IE 11 issue.
+    marginTop: theme.spacing(1),
+  },
 }));
 
+const sendBooking = ({slotId, slotDate, slotPersonalId}) => { 
+  const userEmail  = JSON.parse(localStorage.getItem('token'))['user'];
+  const token = JSON.parse(localStorage.getItem('token'));
+  // console.log("string: " + JSON.stringify(booking_info));
+  //Post info to backend API
+  return fetch('http://localhost:8000/bookings/add', {
+      mode: 'no-cors',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Cookie': `jwt=${token}`
+      },
+      body: JSON.stringify({slotId, slotDate, slotPersonalId, userEmail})
+    })
+    // result.then((sucess) => { console.log(sucess) })
+    .then(response => {
+      // if(response.status === 200){
+      //     const result = response.result;
+      //     console.log("result sendBooking: " + result);
+          return response.status;
+      // }        
+   })  
+}
 
 export default function Booking() { 
   const classes = useStyles();
+  
+  let [selectedDay, setSelectedDay] = useState('');  
+  let [queryDay, setQueryDay] = useState('');  
+  let [slotList, setSlotList] = useState([]);
+  let [slotId, setSlotId] = useState(null);
+  let [slotPersonalId, setSlotPersonalId] = useState('');
+  let [slotDate, setSlotDate] = useState('');
+  //Validation and error checking
+  const [error, setError] = useState(false);
+  const [helperText, setHelperText] = useState('');
+  let [isSubmitted, setIsSubmitted] = useState(false);
+  let [response, setResponse] = useState('');
 
-    let [selectedDay, setSelectedDay] = useState('');  
-    let [queryDay, setQueryDay] = useState('');  
-    let [bookingList, setBookingList] = useState([]);
-    let [slotList, setSlotList] = useState([]);
+  var dateFormat = require("dateformat");
+  var date = new Date('');
 
-    var dateFormat = require("dateformat");
-    var date = new Date('');
-    
     React.useEffect(() => {
       fetch(`http://localhost:8000/slots/get/${queryDay}`)
         .then((response) => response.json())
@@ -80,8 +111,36 @@ export default function Booking() {
       setSelectedDay(day);
       setQueryDay(dateFormat(selectedDay, "yyyy-mm-dd")); 
   };
+  
+  const [selectedIndex, setSelectedIndex] = useState(1);
+  //Handle selected item
+  const handleListItemClick = (event, index, slot_id, slot_personal, slot_date) => {
+    setSelectedIndex(index);
+    setSlotId(slot_id);
+    setSlotPersonalId(slot_personal);
+    setSlotDate(slot_date);
 
-  console.log("day: " + queryDay);
+    console.log("slotId: " + slotId + "   - personal: " + slotPersonalId + "  - slotDate: " + slotDate);
+  };
+
+ 
+  const handleSubmit = e => {
+    e.preventDefault();
+
+    //Validates if a slot has been selected
+    if(!slotId){
+      setHelperText('Please select a slot');
+      setError(true);
+    }
+    //Sets variable to check and render component SendBooking
+    // setIsSubmitted(true);
+      //Calls component to post new booking
+    // <SendBooking slotId={slotId} slotPersonalId={slotPersonalId} slotDate={slotDate}/>
+    console.log("== SUBMIT - slotId: " + slotId + "   - personal: " + slotPersonalId + "  - slotDate: " + slotDate);
+   sendBooking({slotId, slotDate, slotPersonalId});
+    
+    
+  }
 
   return (
     <ThemeProvider theme={theme}>
@@ -122,40 +181,62 @@ export default function Booking() {
                     <CardContent>
                     { slotList[0] 
                     ? 
-                      <Typography variant="h5">
+                      <Typography variant="h6" >
                         { dateFormat(slotList[0].date, "dddd, mmmm dS")}
                       </Typography> 
                     : 
-                    <Typography variant="h5">
+                    <Typography variant="h6">
+                      Sorry, there are no available slots on this date
                       </Typography> 
                     }
-                  
+                    <form 
+                        className={classes.form} 
+                        onSubmit={handleSubmit}
+                        error={error}
+                    >
+                        
                     {/* Check if there is at least one item stored in the returned array */}
                     {
                       slotList[0] 
-                      ?  slotList.map((slot) => (
-                        <React.Fragment>
-                        
-                          <List 
+                      ?  slotList.map((slot, index) => (
+                         //Increase the counter for index
+                         <React.Fragment>  
+                           <List 
                               component="nav" 
                               className={classes.root} 
                               aria-label="mailbox folders"
-                            >
-                              <ListItem button>            
-                                <ListItemText primary={  
-                                    date = dateFormat(slot.date, "hh:MM")
-                                } />
+                            > 
+                              <ListItem 
+                                button
+                                key={slot._id}
+                                selected={selectedIndex === index}
+                                onClick={(event) => handleListItemClick(event, index, slot._id, slot.personal, slot.date)} 
+                              >
+                               
+                                <ListItemText
+                                   primary={date = dateFormat(slot.date, "hh:MM TT")}
+                                />
                               </ListItem>
-                              <Divider color="primary"/>   
-                          </List>  
-                        </React.Fragment>                   
-                            
-                        
+                              <Divider color="primary"/>  
+                              </List>     
+                        </React.Fragment>     
+                                       
                     ))
                     : <Typography variant="h5" component="h2">
-                        Sorry, there are no available slots on this date
-                      </Typography>                 
-                      }               
+                      </Typography>  
+                      }    
+                      <FormHelperText>{helperText}</FormHelperText>
+                       <Button
+                          type="submit"
+                          fullWidth
+                          variant="contained"
+                          color="primary"
+                          className={classes.submit}
+                      >
+                         Book selected slot
+                      </Button>                                       
+                      </form>   
+                    
                     </CardContent>              
                   </Card>
                   </Grid>            

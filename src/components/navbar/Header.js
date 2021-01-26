@@ -10,33 +10,14 @@ import {
     ThemeProvider, 
     Typography
      } from "@material-ui/core"
-import { Home, KeyboardArrowUp } from "@material-ui/icons"
+import { KeyboardArrowUp } from "@material-ui/icons"
 import { makeStyles } from "@material-ui/core/styles"
 import SideDrawer from "./SideDrawer"
 import HideOnScroll from "./HideOnScroll"
 import BackToTop from "./BackToTop";
-import Dashboard from '../dashboard/Dashboard'
-import Booking from '../booking/Booking'
-import AddMeal from '../meal/AddMeal'
-import App from '../../App'
-import PropTypes from 'prop-types';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import Paper from '@material-ui/core/Paper';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import Divider from '@material-ui/core/Divider';
-// import { Route, MemoryRouter as Router} from 'react-router';
-import {
-    BrowserRouter,
-    Switch,
-    Route,
-    Link,
-    NavLink
-  } from "react-router-dom";
-import DashboardIcon from '@material-ui/icons/Dashboard';
-import EventIcon from '@material-ui/icons/Event';
-import Button from '@material-ui/core/Button';
 
 const useStyles = makeStyles({
     navbarDisplayFlex: {

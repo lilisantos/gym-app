@@ -1,12 +1,10 @@
-import React, {Component, useState} from 'react';
-import { createMuiTheme, ThemeProvider, Button, Container, Typography } from '@material-ui/core';
+import React from 'react';
+import { createMuiTheme, ThemeProvider} from '@material-ui/core';
 import Header from '../src/components/navbar/Header';
 import {
   BrowserRouter,
   Switch,
-  Route,
-  Link,
-  NavLink
+  Route
 } from "react-router-dom";
 import Dashboard from '../src/components/dashboard/Dashboard'
 import Booking from '../src/components/booking/Booking'
@@ -24,8 +22,6 @@ const theme = createMuiTheme({
     }
   }
 });
-
-
 
 export default function App() {      
   const { token, setToken } = useToken();
