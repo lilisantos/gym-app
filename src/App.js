@@ -10,6 +10,7 @@ import Dashboard from '../src/components/dashboard/Dashboard'
 import Booking from '../src/components/booking/Booking'
 import AddMeal from '../src/components/meal/AddMeal'
 import Login from './components/login/Login'
+import Invoice from './components/booking/Invoice'
 import useToken from './components/login/useToken'
 
 const theme = createMuiTheme({
@@ -29,7 +30,7 @@ export default function App() {
   if(!token) {
     return <Login setToken={setToken} />
   }
- 
+  
   return (
     <div className="wrapper">
     <ThemeProvider theme={theme}>
@@ -49,9 +50,9 @@ export default function App() {
             <Route path="/diary">
               <AddMeal />
             </Route>
-            {/* <Route path="/logout">
-              <Logout />
-            </Route> */}
+            <Route path="/invoice">
+              <Invoice />
+            </Route>
           </Switch>
         </div>
       </BrowserRouter>

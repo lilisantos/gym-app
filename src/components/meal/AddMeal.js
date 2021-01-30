@@ -23,49 +23,19 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import Alert from '@material-ui/lab/Alert';
 
-const theme = createMuiTheme({
-  palette: {
-    primary: {
-      main: "#343a40"
-    },
-    secondary: {
-      main: "#F7855B"
-    }
-  },
-  backgroundColor: "#F7855B"
-});
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    '& > *': {
-      margin: theme.spacing(1),
-      minWidth: 120,  
-
-    },
-  },
-  formControl: {
-    margin: theme.spacing(2),
-    minWidth: 220,  
-    width: '100%',
-  },
-  selectEmpty: {
-    marginTop: theme.spacing(2),
-    marginRight: theme.spacing(2),
-    width: 120
-  },
-  table: {
-    minWidth: 650,
-  },
-
-}));
+const API_ID = process.env.REACT_APP_FOOD_DB_API_ID;
+const API_KEY = process.env.REACT_APP_FOOD_DB_API_KEY;
 
 async function catchFood(search){
+  console.log("inside catch: " + search)
   return new Promise((resolve, reject) => {
     const rows = [];
 
     if (search){    
-      fetch('https://api.edamam.com/api/food-database/v2/parser?ingr='+search+'&app_id=84f0b650&app_key=717d2a04acb3c5c37eba37b2e06b74b2')
+      fetch(`https://api.edamam.com/api/food-database/v2/parser?ingr=${search}&app_id=${API_ID}&app_key=${API_KEY}`)
       .then(response => response.json())
       .then(response => {
         if (response.hints.length) { //get the length of the json returned
@@ -73,17 +43,43 @@ async function catchFood(search){
           //gets each element of the json and creates a new element in the array 
           response.hints.forEach(hint => {
             rows.push(createData(
+              hint.food.foodId,
               hint.food.label, 
               hint.food.nutrients.ENERC_KCAL, 
-              hint.food.nutrients.PROCNT,
+              hint.food.nutrients.CHOCDF,
+              hint.food.nutrients.PROCNT,              
               hint.food.nutrients.FAT
               ))           
           })
+          console.log("row: " + JSON.stringify(rows))
+          resolve(rows);
+        }else{
           resolve(rows);
         }
       })
     }
   })
+}
+
+async function sendMeal({type, food, calories, carbs, protein, fat}){ 
+  //Get data from localStorage
+  const userEmail  = JSON.parse(localStorage.getItem('token'))['user'];
+  const token = JSON.parse(localStorage.getItem('token'));
+
+  //Post info to backend API
+   fetch('http://localhost:8000/member_meals/add', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Cookie': `jwt=${token}`
+      },
+      body: JSON.stringify({type, food, calories, carbs, protein, fat, userEmail})
+    })    
+    .then(response => {
+      console.log(response.status);
+      return response.status;
+    })   
 }
 
 //Setup datagrid to display the elements returned
@@ -97,10 +93,19 @@ const columns = [
 ];
 
 //Creates each element to display on the list
-function createData(name, calories, carbs, protein, fat) {
-  return { name, calories, carbs, protein, fat };
+function createData(foodId, name, calories, carbs, protein, fat) {
+  return { foodId, name, calories, carbs, protein, fat };
 }
 
+//Formats the text coming for the api response
+function capitalize(str){
+  //Capitalize the first letter and set lower case for the rest
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
+function formatDecimal(num){
+  return Number.parseFloat(num).toFixed(0);
+} 
 
 export default function AddMeal() { 
   const classes = useStyles();
@@ -108,51 +113,93 @@ export default function AddMeal() {
     let [type, setType] = useState(' ');  
     const [data, setData] = useState([]);
     const [search, setSearch] = useState('');    
-    const [food, setFood] = useState([]);
-    const [cal, setCal] = useState([]);
+    const [food, setFood] = useState('');
+    const [calories, setCalories] = useState('');
+    const [carbs, setCarbs] = useState('');
+    const [protein, setProtein] = useState('');
+    const [fat, setFat] = useState('');
+
+     //Validation and error checking variables
+    const [error, setError] = useState(false);
+    const [helperText, setHelperText] = useState('');
+    let [showError, setShowError] = useState(false);
+    let [showSuccess, setShowSuccess] = useState(false);
+    let [isSubmitted, setIsSubmitted] = useState();
 
     // Handle change on select field
-    const handleChange = (event) => {
+    const handleChangeSearch = (event) => {
       const s = event.target.value.toString();
-      setSearch(s);
-      console.log("search: " + search)
+      setSearch(s);    
+    }; 
+    // Handle change on select field
+    const handleChangeType = (event) => {
+      setType(event.target.value);     
     }; 
 
-    const handleSubmit = async e => {
-      e.preventDefault();     
-      console.log("search submit: " + search)
-     
+    const handleSubmitSearch = async e => {
+      e.preventDefault();    
+      console.log("search sub: " + search)
       try{
-        const foods = await catchFood(search);
-        console.log("foods: " + JSON.stringify(foods));
+        const foods = await catchFood(search);     
+      
         setData(foods);
       }catch(ex){
-        console.log("====error submit: " + ex);
+       return {error: ex}
       }      
     }
 
-    const [selectedIndex, setSelectedIndex] = useState(1);
-    //Handle selected item
-    const handleRowClick = (event, index, food) => {
-      setSelectedIndex(index);
-    };
+  const [selectedIndex, setSelectedIndex] = useState();
+  //Handle selected item
+  const handleRowClick = (event, 
+    index, 
+    name, 
+    calories,
+    carbs,
+    protein,
+    fat) => {
+
+    setSelectedIndex(index);
+    setFood(name);
+    setCalories(calories);
+    setCarbs(carbs);
+    setProtein(protein);
+    setFat(fat);
+  };
+
+  const handleSubmit = async e => {
+    e.preventDefault();
+
+    //Calls function to post new booking
+   console.log("== SUBMIT - food: " + food + "   - cal: " + calories + "  - carbs: " + carbs+ "  - protein: " + protein+ "  - fat: " + fat);
+
+   try{
+    const responseMeal = await sendMeal({type, food, calories, carbs, protein, fat});  
+    setIsSubmitted(true); 
+   }catch(ex){
+    console.log("response error:" + ex); 
+   }
+
+  }
+
 
   return (
     <ThemeProvider theme={theme}>
       <Container>
         <Typography variant="h4" color="secondary" component={'span'}>Add a meal</Typography>   
           <Box justifyContent="center">  
+            {/* Form to execute search for a food */}
             <form 
               className={classes.formControl}
-              onSubmit={handleSubmit} 
+              onSubmit={handleSubmitSearch} 
             >
               <InputLabel id="meal-type-label">Meal type</InputLabel>
               <Select
                 labelId="meal-type-label"
                 id="meal-type"
                 value={type}
-                // onChange={handleChange}
+                onChange={handleChangeType}
                 className={classes.selectEmpty}
+                required
               >
                 <MenuItem value="" disabled>Select a meal type</MenuItem>
                 <MenuItem value="Breakfast">Breakfast</MenuItem>
@@ -166,7 +213,8 @@ export default function AddMeal() {
                 id="search" 
                 name="search"
                 label="Search for a food"               
-                onChange={handleChange}
+                onChange={handleChangeSearch}
+                required
               />
               <Button
                     type="submit"
@@ -176,12 +224,29 @@ export default function AddMeal() {
                     <SearchIcon />
                 </Button>
             </form>      
-            <div style={{ height: 400, width: '100%' }}>
-              <DataGrid rows={rows} columns={columns} pageSize={5} checkboxSelection />
-            </div>
-            {/* <TableContainer component={Paper}>
+           
+           {/* Form to submit food */}
+            <form
+              className={classes.formControl}
+              onSubmit={handleSubmit}
+              error={error} 
+            >
+              <FormHelperText>{helperText}</FormHelperText>
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      color="primary"
+                      className={classes.submit}
+                  >
+                    Add selected meal
+                  </Button>     
+                  {isSubmitted &&
+                      <Alert severity="success">Meal added!</Alert>
+                  }
+
+            <TableContainer component={Paper}>
               <Table className={classes.table}  className={classes.root} size="small" aria-label="foods">
-                <TableHead>
+                <TableHead>               
                   <TableRow>
                     <TableCell>Food</TableCell>
                     <TableCell align="right">Calories</TableCell>
@@ -191,32 +256,54 @@ export default function AddMeal() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {data
+                
+
+                  {data[0]
                   ?
                   data.map((food, index) => (
                     <TableRow 
-                      key={food.name} 
-                      onRowClick={(event) => handleRowClick(event, food.name)} 
+                      key={food.food_id} 
                     >
                       <TableCell component="th" scope="row">
-                        {food.name}
+                      <ListItem 
+                        button
+                        key={food.foodId}
+                        selected={selectedIndex === index}
+                        onClick={(event) => handleRowClick(
+                          event, 
+                          index, 
+                          food.name, 
+                          food.calories,
+                          food.carbs,
+                          food.protein,
+                          food.fat,
+                        )} 
+                      >
+                          <ListItemText
+                              primary={capitalize(food.name)} 
+                          />
+                        </ListItem>
+                      
                       </TableCell>
-                      <TableCell align="right">{food.calories}</TableCell>
-                      <TableCell align="right">{food.fat}</TableCell>
-                      <TableCell align="right">{food.carbs}</TableCell>
-                      <TableCell align="right">{food.protein}</TableCell>
+                      <TableCell align="right" >{formatDecimal(food.calories)}</TableCell>
+                      <TableCell align="right">{formatDecimal(food.carbs)}</TableCell>
+                      <TableCell align="right">{formatDecimal(food.protein)}</TableCell>
+                      <TableCell align="right">{formatDecimal(food.fat)}</TableCell>
                     </TableRow>
                   ))
                   :
-                  <TableRow key={food.name}>
+                  <TableRow>
                       <TableCell component="th" scope="row">
                         No results found
                       </TableCell>
                     </TableRow>
                   }
+                   
                 </TableBody>
               </Table>
-            </TableContainer> */}
+            </TableContainer>
+            </form>  
+           
 
 
               {/* { data 
@@ -263,4 +350,42 @@ export default function AddMeal() {
     </ThemeProvider>   
   );
 }
+
+const theme = createMuiTheme({
+  palette: {
+    primary: {
+      main: "#343a40"
+    },
+    secondary: {
+      main: "#F7855B"
+    }
+  },
+  backgroundColor: "#F7855B"
+});
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    '& > *': {
+      margin: theme.spacing(1),
+      minWidth: 120,  
+
+    },
+  },
+  formControl: {
+    margin: theme.spacing(2),
+    minWidth: 220,  
+    width: '100%',
+  },
+  selectEmpty: {
+    marginTop: theme.spacing(2),
+    marginRight: theme.spacing(2),
+    width: 120
+  },
+  table: {
+    minWidth: 650,
+    textTransform: 'capitalize',
+  },
+
+}));
+
 

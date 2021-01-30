@@ -1,16 +1,20 @@
-import React, {useState} from 'react';
+import React, {useState, useRef } from 'react';
 import { 
   createMuiTheme, 
   ThemeProvider, 
   Container, 
   Typography,
   IconButton, 
+  Button,
 Box} from '@material-ui/core';  
 import { makeStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Grid from '@material-ui/core/Grid';
 import DataUsageIcon from '@material-ui/icons/DataUsage';
+import Invoice from '../booking/Invoice';
+import ReactToPrint from 'react-to-print';
+import ReceiptIcon from '@material-ui/icons/Receipt';
 
 const theme = createMuiTheme({
   palette: {
@@ -49,10 +53,25 @@ const useStyles = makeStyles((theme) => ({
 },
 }));
 
+async function getInvoices(userEmail){
+  return new Promise((resolve, reject) => {
+
+    if (userEmail){    
+      fetch(`http://localhost:8000/invoice/get`)
+      .then((response) => response.json())
+      // .then((json) => setInvoicesList(json));
+    }
+    // resolve(invoicesList);
+  })
+}
 export default function Dashboard(){
   const classes = useStyles();
-
-  let [nextBooking, setNextBooking] = useState([]);
+  const componentRef = useRef();
+  const [nextBooking, setNextBooking] = useState([]);
+  const [invoicesList, setInvoicesList] = useState([]);
+  const userEmail = JSON.parse(localStorage.getItem('token'))['user'];
+  let [displayInvoice, setDisplayInvoice] = useState(false);
+  let [invoice, setInvoice] = useState(null);
   var dateFormat = require("dateformat");
   var date = new Date();    
   
@@ -61,8 +80,22 @@ export default function Dashboard(){
       .then((response) => response.json())
       .then((json) => setNextBooking(json));
   }, []);
+  
+  // //Retrieve list of invoices
+  // React.useEffect(() => { 
+  //   console.log("useremail: " + useremail);
+  //   const list = await getInvoices(userEmail);
+  // });        
+        
+//   const handleDayClick = (day) => {
+//     setSelectedDay(day);
+//     setQueryDay(dateFormat(selectedDay, "yyyy-mm-dd")); 
+// };
 
-  console.log("book: " + nextBooking);
+  console.log("invoicesList: " + JSON.stringify(invoicesList));
+  const renderInvoice = () => {
+    setDisplayInvoice(true);
+}
 
   return (    
     <ThemeProvider theme={theme}>      
@@ -195,14 +228,38 @@ export default function Dashboard(){
           </CardContent>              
         </Card>
      
-        <Card className={classes.root}>
+        <Card>
           <CardContent>
-          <IconButton >
-              <Typography variant="h5">
-                <a href='/invoice' className={classes.linkText}> Your invoices </a>              
-              </Typography>   
+            <Typography variant="h5" component="h3">
+              Your invoices
+            </Typography> 
+            <IconButton
+              onClick={renderInvoice}
+            >            
+              <ReceiptIcon/>              
+              <Typography variant="subtitle1" component="h2">
+                View last invoice
+              </Typography> 
+            </IconButton>  
+            {displayInvoice &&
+                <div>
+                  <ReactToPrint
+                      trigger={() => 
+                        <Button
+                        variant="contained"
+                        color="primary"
+                        >
+                            Print invoice
+                        </Button>
+                      }
+                      content={() => componentRef.current}
+                  />
+                  <Invoice ref={componentRef} />
+                </div>
+            }
+
+            
               
-          </IconButton>     
           </CardContent>              
         </Card>
       </Box> 

@@ -72,13 +72,7 @@ async function sendBooking({slotId, slotDate, slotPersonalId}){
     .then(response => {
       console.log(response.status);
       return response.status;
-    })
-    // .then(json => setShowSuccess(true))    
-    // .catch(err => {
-    //   console.log(err);    
-    //   //Change the state here which will show your Alert
-    //   setShowError(true)
-    // })
+    }) 
 }
 
 export default function Booking() { 
@@ -110,7 +104,7 @@ export default function Booking() {
     const handleDayClick = (day) => {
       setSelectedDay(day);
       setQueryDay(dateFormat(selectedDay, "yyyy-mm-dd")); 
-  };
+    };
   
   const [selectedIndex, setSelectedIndex] = useState(1);
   //Handle selected item
