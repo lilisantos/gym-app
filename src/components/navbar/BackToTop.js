@@ -1,6 +1,8 @@
+/* Navbar based on the tutorial available at
+* https://ansonlowzf.com/how-to-build-a-material-ui-navbar/
+*/
 import * as React from "react"
 import { Zoom, useScrollTrigger } from "@material-ui/core"
-
 
 const style = {
   position: `fixed`,
@@ -9,6 +11,7 @@ const style = {
   zIndex: `99`,
 }
 
+//Component to add the "back to top" button when page is scrolled down
 const BackToTop = ({ children }) => {
   const trigger = useScrollTrigger()
 

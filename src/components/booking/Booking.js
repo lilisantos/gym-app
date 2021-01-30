@@ -5,7 +5,8 @@ import {
   Button, 
   Container, 
   Typography,
-  Box } from '@material-ui/core';
+  Box 
+  } from '@material-ui/core';
 import 'react-date-picker/dist/DatePicker.css';
 import DayPicker from 'react-day-picker';
 import 'react-day-picker/lib/style.css';
@@ -20,47 +21,13 @@ import Grid from '@material-ui/core/Grid';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import Alert from '@material-ui/lab/Alert';
 
-const theme = createMuiTheme({
-  palette: {
-    primary: {
-      main: "#343a40"
-    },
-    secondary: {
-      main: "#F7855B"
-    }
-  },
-});
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    width: '100%',
-    // maxWidth: 600,
-    display:`flex`,    
-    backgroundColor: theme.palette.background.paper,
-    marginTop: 20,
-  },
-  container: {
-    display: 'flex',
-    flexWrap: 'wrap',
-  },
-  textField: {
-    marginLeft: theme.spacing(2),
-    marginRight: theme.spacing(2),
-    width: 200,
-  },
-  form: {
-    width: '100%', // Fix IE 11 issue.
-    marginTop: theme.spacing(1),
-  },
-}));
-
 async function sendBooking({slotId, slotDate, slotPersonalId}){ 
   //Get data from localStorage
   const userEmail  = JSON.parse(localStorage.getItem('token'))['user'];
   const token = JSON.parse(localStorage.getItem('token'));
 
   //Post info to backend API
-   fetch('http://localhost:8000/bookings/add', {
+   fetch('https://fitness-api-cct.herokuapp.com/bookings/add', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -78,9 +45,12 @@ async function sendBooking({slotId, slotDate, slotPersonalId}){
 export default function Booking() { 
   const classes = useStyles();
   
+  const [selectedIndex, setSelectedIndex] = useState(1);
   let [selectedDay, setSelectedDay] = useState('');  
   let [queryDay, setQueryDay] = useState('');  
   let [slotList, setSlotList] = useState([]);
+
+  //Variables to store a booking
   let [slotId, setSlotId] = useState(null);
   let [slotPersonalId, setSlotPersonalId] = useState('');
   let [slotDate, setSlotDate] = useState('');
@@ -88,28 +58,29 @@ export default function Booking() {
   //Validation and error checking variables
   const [error, setError] = useState(false);
   const [helperText, setHelperText] = useState('');
-  let [showError, setShowError] = useState(false);
-  let [showSuccess, setShowSuccess] = useState(false);
-  let [isSubmitted, setIsSubmitted] = useState();
+  let [isSubmitted, setIsSubmitted] = useState();  
 
   var dateFormat = require("dateformat");
   var date = new Date('');
 
-    React.useEffect(() => {
-      fetch(`http://localhost:8000/slots/getByDate/${queryDay}`)
-        .then((response) => response.json())
-        .then((json) => setSlotList(json));
-    }, [queryDay]);          
-          
-    const handleDayClick = (day) => {
-      setSelectedDay(day);
-      setQueryDay(dateFormat(selectedDay, "yyyy-mm-dd")); 
-    };
+  //Handles the selected day on calendar and formats
+  const handleDayClick = (day) => {
+    setSelectedDay(day);
+    setQueryDay(dateFormat(selectedDay, "yyyy-mm-dd")); 
+  };
+
+  //Gets slots by date, once the user selected a day on the calendar
+  React.useEffect(() => {
+    fetch(`https://fitness-api-cct.herokuapp.com/slots/getByDate/${queryDay}`)
+      .then((response) => response.json())
+      .then((json) => setSlotList(json));
+  }, [queryDay]);          
   
-  const [selectedIndex, setSelectedIndex] = useState(1);
-  //Handle selected item
+  //Handle selected item on slot list
   const handleListItemClick = (event, index, slot_id, slot_personal, slot_date) => {
-    setSelectedIndex(index);
+    setSelectedIndex(index); // sets selected item
+
+    //Sets data to send to POST request
     setSlotId(slot_id);
     setSlotPersonalId(slot_personal);
     setSlotDate(slot_date);
@@ -123,17 +94,13 @@ export default function Booking() {
       setHelperText('Please select a slot');
       setError(true);
     }
-    //Sets variable to check and render component SendBooking
-    // setIsSubmitted(true);
-      //Calls component to post new booking
-    // <SendBooking slotId={slotId} slotPersonalId={slotPersonalId} slotDate={slotDate}/>
-   console.log("== SUBMIT - slotId: " + slotId + "   - personal: " + slotPersonalId + "  - slotDate: " + slotDate);
-
+    
    try{
+    //Calls function to post a new booking
     const responseBooking = await sendBooking({slotId, slotDate, slotPersonalId});  
     setIsSubmitted(true); 
    }catch(ex){
-    console.log("response error:" + isSubmitted); 
+    return {error: ex}
    }
 
   }
@@ -151,7 +118,7 @@ export default function Booking() {
                 className={classes.root} 
                 spacing={2} >
 
-            {/* Card 1 - Current Booking*/}
+            {/* Date picker */}
             <Grid item>
               <Grid container item justify="center" spacing={2}>          
                   <Grid>
@@ -169,7 +136,7 @@ export default function Booking() {
               </Grid>
             </Grid>
 
-            {/* Card 2 */}
+            {/* Slot list */}
             <Grid item>
               <Grid container justify="center" spacing={2}>           
                   <Grid>
@@ -195,20 +162,19 @@ export default function Booking() {
                     {
                       slotList[0] 
                       ?  slotList.map((slot, index) => (
-                         //Increase the counter for index
                          <React.Fragment>  
                            <List 
                               component="nav" 
                               className={classes.root} 
                               aria-label="mailbox folders"
                             > 
+                              {/* Renders each item */}
                               <ListItem 
                                 button
                                 key={slot._id}
                                 selected={selectedIndex === index}
                                 onClick={(event) => handleListItemClick(event, index, slot._id, slot.personal, slot.date)} 
-                              >
-                               
+                              >                               
                                 <ListItemText
                                    primary={date = dateFormat(slot.date, "hh:MM TT")}
                                 />
@@ -218,10 +184,14 @@ export default function Booking() {
                         </React.Fragment>     
                                        
                     ))
-                    : <Typography variant="h5" component="h2">
-                      </Typography>  
-                      }    
+                    : 
+                    // Shows nothing if there is no data returned
+                    <Typography variant="h5" component="h2"></Typography>  
+                    }   
+                      {/* Renders error message, if required */}
                       <FormHelperText>{helperText}</FormHelperText>
+
+                      {/* Submit button */}
                        <Button
                           type="submit"
                           fullWidth
@@ -232,10 +202,9 @@ export default function Booking() {
                          Book selected slot
                       </Button>                                       
                       </form>  
-
+                      {/* Shows success message */}
                       {isSubmitted &&
-                         <Alert severity="success">Booking added!</Alert>
-                        
+                         <Alert severity="success">Booking added!</Alert>                        
                       }
                       
                     </CardContent>              
@@ -249,4 +218,39 @@ export default function Booking() {
     </ThemeProvider>   
   );
 }
+
+//Theme styles
+const theme = createMuiTheme({
+  palette: {
+    primary: {
+      main: "#343a40"
+    },
+    secondary: {
+      main: "#F7855B"
+    }
+  },
+});
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    width: '100%',
+    display:`flex`,    
+    backgroundColor: theme.palette.background.paper,
+    marginTop: 20,
+  },
+  container: {
+    display: 'flex',
+    flexWrap: 'wrap',
+  },
+  textField: {
+    marginLeft: theme.spacing(2),
+    marginRight: theme.spacing(2),
+    width: 200,
+  },
+  form: {
+    width: '100%', 
+    marginTop: theme.spacing(1),
+  },
+}));
+
 

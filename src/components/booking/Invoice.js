@@ -7,16 +7,12 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
-import { 
-  createMuiTheme, 
+import {
   ThemeProvider, 
   Container, 
   Typography,
-  IconButton, 
 Box} from '@material-ui/core';  
 import PropTypes from 'prop-types';
-
-const TAX_RATE = 0.07;
 
 const styles = ({
   table: {
@@ -24,81 +20,43 @@ const styles = ({
   },
 });
 
-function ccyFormat(num) {
-  return `${num.toFixed(2)}`;
-}
-
-function priceRow(qty, unit) {
-  return qty * unit;
-}
-
-function createRow(desc, qty, unit) {
-  const price = priceRow(qty, unit);
-  return { desc, qty, unit, price };
-}
-
-function subtotal(items) {
-  return items.map(({ price }) => price).reduce((sum, i) => sum + i, 0);
-}
-
-const rows = [
-  createRow('Paperclips (Box)', 100, 1.15),
-  createRow('Paper (Case)', 10, 45.99),
-  createRow('Waste Basket', 2, 17.99),
-];
-
-const invoiceSubtotal = subtotal(rows);
-const invoiceTaxes = TAX_RATE * invoiceSubtotal;
-const invoiceTotal = invoiceTaxes + invoiceSubtotal;
-
 class Invoice extends React.Component{
   
   render(){
-    // const { classes } = this.props;
+    
     return (
       <ThemeProvider >
-      <Container>
-        <Typography variant="h6" color="secondary">Your invoice</Typography>     
+      <Container justifyContent='center'>
+        <Typography variant="h" color="secondary">Your invoice</Typography>     
         <Box justifyContent="center">
-          <TableContainer component={Paper}>
+        <Typography variant="h4" color="secondary">
+            FitnessGym
+        </Typography>
+        <Typography variant="h6" color="primary">
+            Liliane Santos
+        </Typography>
+        <Typography variant="body1" color="primary">
+            Date generated: 30/01/2021
+        </Typography>
+          <TableContainer component={Paper} fullWidth>
             <Table aria-label="spanning table">
               <TableHead>
                 <TableRow>
-                  <TableCell align="center" colSpan={3}>
+                  <TableCell align="left" colSpan={4}>
                     Details
                   </TableCell>
                   <TableCell align="right">Price</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>Desc</TableCell>
-                  <TableCell align="right">Qty.</TableCell>
-                  <TableCell align="right">Unit</TableCell>
-                  <TableCell align="right">Sum</TableCell>
-                </TableRow>
+                </TableRow>                
               </TableHead>
               <TableBody>
-                {rows.map((row) => (
-                  <TableRow key={row.desc}>
-                    <TableCell>{row.desc}</TableCell>
-                    <TableCell align="right">{row.qty}</TableCell>
-                    <TableCell align="right">{row.unit}</TableCell>
-                    <TableCell align="right">{ccyFormat(row.price)}</TableCell>
+                  <TableRow>
+                    <TableCell colSpan={4}>Individual training on 30/01/2021</TableCell>
+                    <TableCell align="right">€50</TableCell>
                   </TableRow>
-                ))}
-  
+              
                 <TableRow>
-                  <TableCell rowSpan={3} />
-                  <TableCell colSpan={2}>Subtotal</TableCell>
-                  <TableCell align="right">{ccyFormat(invoiceSubtotal)}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>Tax</TableCell>
-                  <TableCell align="right">{`${(TAX_RATE * 100).toFixed(0)} %`}</TableCell>
-                  <TableCell align="right">{ccyFormat(invoiceTaxes)}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell colSpan={2}>Total</TableCell>
-                  <TableCell align="right">{ccyFormat(invoiceTotal)}</TableCell>
+                  <TableCell colSpan={4} align="right">Total</TableCell>
+                  <TableCell align="right">€50</TableCell>
                 </TableRow>
               </TableBody>
             </Table>

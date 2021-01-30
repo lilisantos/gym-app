@@ -5,10 +5,8 @@ import {
   Container, 
   Typography,
   Box } from '@material-ui/core';
-import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import Divider from '@material-ui/core/Divider';
 import { makeStyles } from '@material-ui/core/styles';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -26,9 +24,11 @@ import Paper from '@material-ui/core/Paper';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import Alert from '@material-ui/lab/Alert';
 
+//Gets environment variables for api key
 const API_ID = process.env.REACT_APP_FOOD_DB_API_ID;
 const API_KEY = process.env.REACT_APP_FOOD_DB_API_KEY;
 
+//sends request for external api
 async function catchFood(search){
   console.log("inside catch: " + search)
   return new Promise((resolve, reject) => {
@@ -61,13 +61,37 @@ async function catchFood(search){
   })
 }
 
+//Setup datagrid to display the elements returned from external API
+const columns = [
+  { field: 'name', headerName: 'Name', width: 130 },
+  { field: 'calories', headerName: 'Calories', width: 100, },
+  { field: 'protein', headerName: 'Protein&nbsp;(g)', width: 90, },
+  { field: 'carbs', headerName: 'Carbs&nbsp;(g)', width: 90, },
+  { field: 'fat', headerName: 'Fat&nbsp;(g)', width: 90, },
+  
+];
+
+//Creates each element to display on the list
+function createData(foodId, name, calories, carbs, protein, fat) {
+  return { foodId, name, calories, carbs, protein, fat };
+}
+//Formats the text coming for the api response
+function capitalize(str){
+  //Capitalize the first letter and set lower case for the rest
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+function formatDecimal(num){
+  return Number.parseFloat(num).toFixed(0);
+} 
+
+//send request to back-end API to add a new meal
 async function sendMeal({type, food, calories, carbs, protein, fat}){ 
   //Get data from localStorage
   const userEmail  = JSON.parse(localStorage.getItem('token'))['user'];
   const token = JSON.parse(localStorage.getItem('token'));
 
   //Post info to backend API
-   fetch('http://localhost:8000/member_meals/add', {
+   fetch('https://fitness-api-cct.herokuapp.com/member_meals/add', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -82,34 +106,11 @@ async function sendMeal({type, food, calories, carbs, protein, fat}){
     })   
 }
 
-//Setup datagrid to display the elements returned
-const columns = [
-  { field: 'name', headerName: 'Name', width: 130 },
-  { field: 'calories', headerName: 'Calories', width: 100, },
-  { field: 'protein', headerName: 'Protein&nbsp;(g)', width: 90, },
-  { field: 'carbs', headerName: 'Carbs&nbsp;(g)', width: 90, },
-  { field: 'fat', headerName: 'Fat&nbsp;(g)', width: 90, },
-  
-];
-
-//Creates each element to display on the list
-function createData(foodId, name, calories, carbs, protein, fat) {
-  return { foodId, name, calories, carbs, protein, fat };
-}
-
-//Formats the text coming for the api response
-function capitalize(str){
-  //Capitalize the first letter and set lower case for the rest
-  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-}
-
-function formatDecimal(num){
-  return Number.parseFloat(num).toFixed(0);
-} 
-
 export default function AddMeal() { 
   const classes = useStyles();
+  const [selectedIndex, setSelectedIndex] = useState();
 
+  //Variables to setup data for POST request
     let [type, setType] = useState(' ');  
     const [data, setData] = useState([]);
     const [search, setSearch] = useState('');    
@@ -122,11 +123,9 @@ export default function AddMeal() {
      //Validation and error checking variables
     const [error, setError] = useState(false);
     const [helperText, setHelperText] = useState('');
-    let [showError, setShowError] = useState(false);
-    let [showSuccess, setShowSuccess] = useState(false);
     let [isSubmitted, setIsSubmitted] = useState();
 
-    // Handle change on select field
+    // Handle change on search field
     const handleChangeSearch = (event) => {
       const s = event.target.value.toString();
       setSearch(s);    
@@ -136,19 +135,17 @@ export default function AddMeal() {
       setType(event.target.value);     
     }; 
 
+    //Handle submit for external API
     const handleSubmitSearch = async e => {
-      e.preventDefault();    
-      console.log("search sub: " + search)
+      e.preventDefault();   
       try{
-        const foods = await catchFood(search);     
-      
+        const foods = await catchFood(search); 
         setData(foods);
       }catch(ex){
        return {error: ex}
       }      
     }
 
-  const [selectedIndex, setSelectedIndex] = useState();
   //Handle selected item
   const handleRowClick = (event, 
     index, 
@@ -169,18 +166,14 @@ export default function AddMeal() {
   const handleSubmit = async e => {
     e.preventDefault();
 
-    //Calls function to post new booking
-   console.log("== SUBMIT - food: " + food + "   - cal: " + calories + "  - carbs: " + carbs+ "  - protein: " + protein+ "  - fat: " + fat);
-
    try{
+     //Calls function to post meal
     const responseMeal = await sendMeal({type, food, calories, carbs, protein, fat});  
     setIsSubmitted(true); 
    }catch(ex){
     console.log("response error:" + ex); 
    }
-
   }
-
 
   return (
     <ThemeProvider theme={theme}>
@@ -257,7 +250,7 @@ export default function AddMeal() {
                 </TableHead>
                 <TableBody>
                 
-
+                   {/* Check if there is at least one item stored in the array */}
                   {data[0]
                   ?
                   data.map((food, index) => (
@@ -302,55 +295,14 @@ export default function AddMeal() {
                 </TableBody>
               </Table>
             </TableContainer>
-            </form>  
-           
-
-
-              {/* { data 
-                ?  data.map(() => (
-                  <React.Fragment>        
-                    <List 
-                        component="nav" 
-                        className={classes.root} 
-                        aria-label="foods"
-                      >
-                        <ListItem button>            
-                          <ListItemText 
-                            primary={food.label} 
-                            secondary={
-                              <React.Fragment>
-                                <div class="row">                                
-                                  <Typography variant="h6" component={'span'}>
-                                      Label
-                                  </Typography>   
-                                  <div key={food.calories} class="column">cal{food.calories}</div>
-                                  <div key={food.divrotein}  class="column">protein{food.protein}</div>
-                                  <div key={food.carbs}  class="column">carbs{food.carbs}</div>
-                                  <div key={food.fat}  class="column">fat{food.fat}</div>  
-                                </div>
-                              </React.Fragment>
-                                
-                              
-                            }
-                          />
-                        </ListItem>
-                        <Divider />   
-                    </List> 
-                    </React.Fragment>  
-                ))
-                : 
-                <Typography variant="h5" component={'span'}>
-                    No results
-                </Typography>   
-              
-                }                        */}
-                    
+            </form>             
          </Box>
       </Container>
     </ThemeProvider>   
   );
 }
 
+//Theme styles
 const theme = createMuiTheme({
   palette: {
     primary: {

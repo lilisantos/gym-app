@@ -1,6 +1,9 @@
 import { useState } from 'react';
 
+//Saves the login token to the localStorage
+
 export default function useToken() {
+    
     const getToken = () => {
         //Takes a key as an argument and returns the string
         const tokenString = localStorage.getItem('token');

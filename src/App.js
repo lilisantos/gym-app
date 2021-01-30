@@ -13,20 +13,10 @@ import Login from './components/login/Login'
 import Invoice from './components/booking/Invoice'
 import useToken from './components/login/useToken'
 
-const theme = createMuiTheme({
-  palette: {
-    primary: {
-      main: "#343a40"
-    },
-    secondary: {
-      main: "#F7855B"
-    }
-  }
-});
-
 export default function App() {      
   const { token, setToken } = useToken();
 
+  //If there is no token, redirects to Login
   if(!token) {
     return <Login setToken={setToken} />
   }
@@ -37,10 +27,9 @@ export default function App() {
       <BrowserRouter>
         <Header />
         <div className="container mt-2" style={{ marginTop: 40 }}>
-          <Switch>
-            {/* <Route exact path="/">
-              <App />
-            </Route> */}
+
+          {/* Routes for menu */}
+          <Switch>           
             <Route exact path="/">
               <Dashboard />
             </Route>
@@ -60,3 +49,15 @@ export default function App() {
     </div>
   );
 }
+
+const theme = createMuiTheme({
+  palette: {
+    primary: {
+      main: "#343a40"
+    },
+    secondary: {
+      main: "#F7855B"
+    }
+  }
+});
+

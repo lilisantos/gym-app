@@ -16,83 +16,23 @@ import Invoice from '../booking/Invoice';
 import ReactToPrint from 'react-to-print';
 import ReceiptIcon from '@material-ui/icons/Receipt';
 
-const theme = createMuiTheme({
-  palette: {
-    primary: {
-      main: "#343a40"
-    },
-    secondary: {  
-      main: "#F7855B"
-    }
-  } 
-});
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    maxWidth: 500,
-    height: 150,
-    display: "flex",
-    justifyContent: "center",
-    marginTop: 20,
-    backgroundColor: theme.palette.background.paper,
-   
-  },
-  title: {
-    fontSize: 14,
-  },
-  pos: {
-    marginTop: 10,
-    marginBottom: 15,
-  },
-  control: {
-    padding: theme.spacing(2),
-  },
-  linkText: {
-    textDecoration: `none`,
-    color: `black`
-},
-}));
-
-async function getInvoices(userEmail){
-  return new Promise((resolve, reject) => {
-
-    if (userEmail){    
-      fetch(`http://localhost:8000/invoice/get`)
-      .then((response) => response.json())
-      // .then((json) => setInvoicesList(json));
-    }
-    // resolve(invoicesList);
-  })
-}
 export default function Dashboard(){
   const classes = useStyles();
   const componentRef = useRef();
   const [nextBooking, setNextBooking] = useState([]);
-  const [invoicesList, setInvoicesList] = useState([]);
   const userEmail = JSON.parse(localStorage.getItem('token'))['user'];
   let [displayInvoice, setDisplayInvoice] = useState(false);
-  let [invoice, setInvoice] = useState(null);
   var dateFormat = require("dateformat");
   var date = new Date();    
   
+  //Get next booking
   React.useEffect(() => {
-    fetch(`http://localhost:8000/bookings/getFirst`)
+    fetch(`https://fitness-api-cct.herokuapp.com/bookings/getFirst`)
       .then((response) => response.json())
       .then((json) => setNextBooking(json));
   }, []);
   
-  // //Retrieve list of invoices
-  // React.useEffect(() => { 
-  //   console.log("useremail: " + useremail);
-  //   const list = await getInvoices(userEmail);
-  // });        
-        
-//   const handleDayClick = (day) => {
-//     setSelectedDay(day);
-//     setQueryDay(dateFormat(selectedDay, "yyyy-mm-dd")); 
-// };
-
-  console.log("invoicesList: " + JSON.stringify(invoicesList));
   const renderInvoice = () => {
     setDisplayInvoice(true);
 }
@@ -111,7 +51,7 @@ export default function Dashboard(){
             alignItems="flex-start" 
       >
 
-        {/* Card 1 - Current Booking*/}
+        {/* Card 1 - Next Booking*/}
         <Grid item xs={6}>
           <Grid container justify="center" spacing={0}>          
               <Grid>
@@ -120,7 +60,6 @@ export default function Dashboard(){
                  {/* Check if there is at least one item stored in the array */}
                  {
                  nextBooking[0]  ? 
-                //  nextBooking.map((booking) => (
                     <React.Fragment>
                       <Typography variant="h5" >
                         Your next workout
@@ -129,8 +68,10 @@ export default function Dashboard(){
                         {  date = dateFormat(nextBooking[0].date, "dddd, mmmm dS @ h:MM TT")}
                       </Typography>
                     </React.Fragment>
-                // ))
-                : <Typography variant="h5" component="h2">
+               
+                : 
+                // Shows message if there is no upcoming bookings
+                <Typography variant="h5" component="h2">
                     There are no upcoming workouts
                   </Typography>                 
                  }             
@@ -141,18 +82,16 @@ export default function Dashboard(){
           </Grid>
         </Grid>
 
-         {/* Card 2 */}
+         {/* Card 2 - Link to Booking Component */}
         <Grid item xs={6}>
           <Grid container justify="center" spacing={0}>           
               <Grid>
               <Card className={classes.root} justify="center">
                 <CardContent>
-                <IconButton >
-                {/* <EventIcon style={{ fontSize: 40 }}  color="secondary"/>     */}
-                <Typography variant="h5" component="h2">
-                <a href='/booking' className={classes.linkText}> Book a workout </a>
-                  </Typography>                 
-                               
+                <IconButton >                
+                  <Typography variant="h5" component="h2">
+                    <a href='/booking' className={classes.linkText}> Book a workout </a>
+                  </Typography>          
                 </IconButton>     
                 </CardContent>              
               </Card>
@@ -160,7 +99,10 @@ export default function Dashboard(){
           </Grid>
         </Grid>
       </Grid>      
-    
+        
+        {/* Nutritional Intake
+        ** This features was not completed, but the layout has already been set for further development
+        */}
         <Card className={classes.root}>
           <CardContent>
             <Typography variant="h5" component="h3">
@@ -228,8 +170,9 @@ export default function Dashboard(){
           </CardContent>              
         </Card>
      
-        <Card>
-          <CardContent>
+      {/* Render invoice component */}
+        <Card className={classes.invoice}>
+          <CardContent >
             <Typography variant="h5" component="h3">
               Your invoices
             </Typography> 
@@ -238,7 +181,7 @@ export default function Dashboard(){
             >            
               <ReceiptIcon/>              
               <Typography variant="subtitle1" component="h2">
-                View last invoice
+                View invoice
               </Typography> 
             </IconButton>  
             {displayInvoice &&
@@ -257,9 +200,6 @@ export default function Dashboard(){
                   <Invoice ref={componentRef} />
                 </div>
             }
-
-            
-              
           </CardContent>              
         </Card>
       </Box> 
@@ -269,3 +209,46 @@ export default function Dashboard(){
    
   );
 }
+//Theme styles
+const theme = createMuiTheme({
+  palette: {
+    primary: {
+      main: "#343a40"
+    },
+    secondary: {  
+      main: "#F7855B"
+    }
+  } 
+});
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    maxWidth: 500,
+    height: 150,
+    display: "flex",
+    justifyContent: "center",
+    marginTop: 20,
+    backgroundColor: theme.palette.background.paper,
+   
+  },
+  invoice: {    
+    display: "flex",
+    justifyContent: "center",
+    marginTop: 20,
+    backgroundColor: theme.palette.background.paper,   
+  },
+  title: {
+    fontSize: 14,
+  },
+  pos: {
+    marginTop: 10,
+    marginBottom: 15,
+  },
+  control: {
+    padding: theme.spacing(2),
+  },
+  linkText: {
+    textDecoration: `none`,
+    color: `black`
+},
+}));

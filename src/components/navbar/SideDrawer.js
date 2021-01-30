@@ -11,27 +11,6 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 
-const useStyles = makeStyles({
-    list: {
-    //   width: 250,
-    },
-    linkText: {
-      textDecoration: `none`,
-      textTransform: `uppercase`,
-      color: `black`,
-    },
-  });
-
-  const theme = createMuiTheme({
-    palette: {
-      primary: {
-        main: "#343a40"
-      },
-      secondary: {
-        main: "#F7855B"
-      }
-    }
-  });  
 
 const SideDrawer = ({navLinks}) => {
     const classes = useStyles();
@@ -55,28 +34,7 @@ const SideDrawer = ({navLinks}) => {
           onClick={toggleDrawer(anchor, false)}
           onKeyDown={toggleDrawer(anchor, false)}
         >        
-    {/* <Router>
-      <List 
-          component="nav" 
-          aria-labelledby="main navigation"
-          className={classes.navDisplayFlex}                                    
-      >                                       
-       
-              <ListItem button>
-                  <Link to='/' className={classes.linkText}>Home</Link>
-              </ListItem>    
-              <ListItem button>
-                  <Link to='/dashboard' className={classes.linkText}>Dashboard</Link>
-              </ListItem>    
-              <ListItem button>
-                  <Link to='/booking' className={classes.linkText}>Booking</Link>
-              </ListItem>           
-              <Route exact path='/' component={App}/>
-              <Route path='/dashboard' component={Dashboard} />
-              <Route path='/booking' component={Booking} />                                              
-          
-      </List>
-  </Router>  */}
+   
      <List component="nav">
       {navLinks.map(({ title, path }) => (
         <a href={path} key={title} className={classes.linkText} /*Add this*/>
@@ -85,8 +43,7 @@ const SideDrawer = ({navLinks}) => {
           </ListItem>
         </a>
       ))}
-    </List>
-          
+    </List>          
         </div>
       );     
 
@@ -114,3 +71,26 @@ const SideDrawer = ({navLinks}) => {
 }
 
 export default SideDrawer
+
+//The,e style
+const useStyles = makeStyles({
+  list: {
+  //   width: 250,
+  },
+  linkText: {
+    textDecoration: `none`,
+    textTransform: `uppercase`,
+    color: `black`,
+  },
+});
+
+const theme = createMuiTheme({
+  palette: {
+    primary: {
+      main: "#343a40"
+    },
+    secondary: {
+      main: "#F7855B"
+    }
+  }
+});  
