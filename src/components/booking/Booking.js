@@ -18,11 +18,7 @@ import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Grid from '@material-ui/core/Grid';
 import FormHelperText from '@material-ui/core/FormHelperText';
-
-import useToken from '../login/useToken';
-import jwt_decode from "jwt-decode";
-// import SendBooking from './SendBooking';
-import ErrorBoundary from '../../errors/ErrorBoundary';
+import Alert from '@material-ui/lab/Alert';
 
 const theme = createMuiTheme({
   palette: {
@@ -58,13 +54,13 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const sendBooking = ({slotId, slotDate, slotPersonalId}) => { 
+async function sendBooking({slotId, slotDate, slotPersonalId}){ 
+  //Get data from localStorage
   const userEmail  = JSON.parse(localStorage.getItem('token'))['user'];
   const token = JSON.parse(localStorage.getItem('token'));
-  // console.log("string: " + JSON.stringify(booking_info));
+
   //Post info to backend API
-  return fetch('http://localhost:8000/bookings/add', {
-      mode: 'no-cors',
+   fetch('http://localhost:8000/bookings/add', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -72,15 +68,17 @@ const sendBooking = ({slotId, slotDate, slotPersonalId}) => {
         'Cookie': `jwt=${token}`
       },
       body: JSON.stringify({slotId, slotDate, slotPersonalId, userEmail})
-    })
-    // result.then((sucess) => { console.log(sucess) })
+    })    
     .then(response => {
-      // if(response.status === 200){
-      //     const result = response.result;
-      //     console.log("result sendBooking: " + result);
-          return response.status;
-      // }        
-   })  
+      console.log(response.status);
+      return response.status;
+    })
+    // .then(json => setShowSuccess(true))    
+    // .catch(err => {
+    //   console.log(err);    
+    //   //Change the state here which will show your Alert
+    //   setShowError(true)
+    // })
 }
 
 export default function Booking() { 
@@ -92,17 +90,19 @@ export default function Booking() {
   let [slotId, setSlotId] = useState(null);
   let [slotPersonalId, setSlotPersonalId] = useState('');
   let [slotDate, setSlotDate] = useState('');
-  //Validation and error checking
+
+  //Validation and error checking variables
   const [error, setError] = useState(false);
   const [helperText, setHelperText] = useState('');
-  let [isSubmitted, setIsSubmitted] = useState(false);
-  let [response, setResponse] = useState('');
+  let [showError, setShowError] = useState(false);
+  let [showSuccess, setShowSuccess] = useState(false);
+  let [isSubmitted, setIsSubmitted] = useState();
 
   var dateFormat = require("dateformat");
   var date = new Date('');
 
     React.useEffect(() => {
-      fetch(`http://localhost:8000/slots/get/${queryDay}`)
+      fetch(`http://localhost:8000/slots/getByDate/${queryDay}`)
         .then((response) => response.json())
         .then((json) => setSlotList(json));
     }, [queryDay]);          
@@ -119,12 +119,9 @@ export default function Booking() {
     setSlotId(slot_id);
     setSlotPersonalId(slot_personal);
     setSlotDate(slot_date);
-
-    console.log("slotId: " + slotId + "   - personal: " + slotPersonalId + "  - slotDate: " + slotDate);
   };
-
  
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault();
 
     //Validates if a slot has been selected
@@ -136,10 +133,15 @@ export default function Booking() {
     // setIsSubmitted(true);
       //Calls component to post new booking
     // <SendBooking slotId={slotId} slotPersonalId={slotPersonalId} slotDate={slotDate}/>
-    console.log("== SUBMIT - slotId: " + slotId + "   - personal: " + slotPersonalId + "  - slotDate: " + slotDate);
-   sendBooking({slotId, slotDate, slotPersonalId});
-    
-    
+   console.log("== SUBMIT - slotId: " + slotId + "   - personal: " + slotPersonalId + "  - slotDate: " + slotDate);
+
+   try{
+    const responseBooking = await sendBooking({slotId, slotDate, slotPersonalId});  
+    setIsSubmitted(true); 
+   }catch(ex){
+    console.log("response error:" + isSubmitted); 
+   }
+
   }
 
   return (
@@ -235,8 +237,13 @@ export default function Booking() {
                       >
                          Book selected slot
                       </Button>                                       
-                      </form>   
-                    
+                      </form>  
+
+                      {isSubmitted &&
+                         <Alert severity="success">Booking added!</Alert>
+                        
+                      }
+                      
                     </CardContent>              
                   </Card>
                   </Grid>            
@@ -244,8 +251,6 @@ export default function Booking() {
             </Grid>
           </Grid>      
       </Box>    
-     
-        
     </Container>
     </ThemeProvider>   
   );

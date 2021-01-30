@@ -86,17 +86,17 @@ export default function Dashboard(){
                 <CardContent>  
                  {/* Check if there is at least one item stored in the array */}
                  {
-                 nextBooking[0] 
-                 ?  nextBooking.map((booking) => (
+                 nextBooking[0]  ? 
+                //  nextBooking.map((booking) => (
                     <React.Fragment>
                       <Typography variant="h5" >
                         Your next workout
                       </Typography>
                     <Typography className={classes.pos} color="textSecondary" variant="h6">
-                        {  date = dateFormat(booking.date, "dddd, mmmm dS @ h:MM TT")}
+                        {  date = dateFormat(nextBooking[0].date, "dddd, mmmm dS @ h:MM TT")}
                       </Typography>
                     </React.Fragment>
-                ))
+                // ))
                 : <Typography variant="h5" component="h2">
                     There are no upcoming workouts
                   </Typography>                 
@@ -201,7 +201,7 @@ export default function Dashboard(){
               <Typography variant="h5">
                 <a href='/invoice' className={classes.linkText}> Your invoices </a>              
               </Typography>   
-              {/* <DescriptionIcon color="secondary" style={{ fontSize: 40 }}/>                          */}
+              
           </IconButton>     
           </CardContent>              
         </Card>

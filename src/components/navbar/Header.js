@@ -54,7 +54,7 @@ const navLinks = [
     { title: `Dashboard`, path: `/` },
     { title: `Booking`, path: `/booking` },
     { title: `Food Diary`, path: `/diary` },
-    { title: `Logout`, path: `/logout` },
+    // { title: `Logout`, path: `/logout` },
   ];
 
   const Header = () => {
